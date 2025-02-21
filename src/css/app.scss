@@ -1,1 +1,29 @@
 // app global css in SCSS form
+body {
+  font-family: 'Roboto', sans-serif; /* Задаем глобальный шрифт */
+  background-color: #f5f5f5; /* Цвет фона для всего приложения */
+  color: #333; /* Основной цвет текста */
+  margin: 0;
+  padding: 0;
+}
+
+/* Пример переопределения стилей для всех q-page */
+.q-page {
+  background-color: #c4dcf8; /* Белый фон для страниц */
+}
+
+/* Пример глобального стиля для заголовков */
+h1,
+h2,
+h3,
+.text-h1,
+.text-h2,
+.text-h3 {
+  font-family: 'Montserrat', sans-serif; /* Другой шрифт для заголовков */
+  color: #1976d2; /* Пример цвета для заголовков */
+}
+
+h1 {
+  font-size: 3rem; // задайте нужное значение, например, 3rem, 32px и т.д.
+  font-weight: bold;
+}
