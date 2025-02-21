@@ -115,9 +115,9 @@ function addToCart(product) {
 }
 
 // Выполняем API-запрос к DummyJSON для загрузки списка продуктов
-api('https://dummyjson.com/products')
+api('http://127.0.0.1:8000/api/products')
   .then(({ data }) => {
-    products.value = data.products
+    products.value = data
   })
   .catch((error) => {
     console.error('Ошибка при загрузке продуктов:', error)
