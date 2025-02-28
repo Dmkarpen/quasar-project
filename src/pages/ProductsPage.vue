@@ -115,7 +115,7 @@ function addToCart(product) {
 }
 
 // Выполняем API-запрос к DummyJSON для загрузки списка продуктов
-api('http://127.0.0.1:8000/api/products')
+api('http://3123379.ki574762.web.hosting-test.net/api/products')
   .then(({ data }) => {
     products.value = data
   })
