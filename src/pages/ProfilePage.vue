@@ -1,8 +1,8 @@
 <template>
   <q-page class="flex flex-center column" padding style="text-align: center">
     <h1>Profile Page</h1>
-    <p>Hello, {{ userName }}</p>
-    <p>Your email: {{ userEmail }}</p>
+    <p class="big-text">Hello, {{ userName }}</p>
+    <p class="big-text">Your email: {{ userEmail }}</p>
 
     <q-btn label="Logout" color="primary" class="q-mt-md" @click="logout" />
   </q-page>
@@ -82,4 +82,8 @@ function logout() {
 
 <style scoped>
 /* Дополнительные стили */
+.big-text {
+  font-size: 1.5rem; /* или 2rem, если хотите ещё крупнее */
+  margin: 0.5rem 0;  /* небольшой отступ сверху/снизу */
+}
 </style>
