@@ -76,22 +76,31 @@ function onSubmit() {
   })
   .then(response => {
     console.log('Registration success:', response.data)
-    // Если бэкенд возвращает token, сохраняем
+    // Предположим, сервер возвращает JSON вида:
+    // {
+    //   "message": "User registered successfully",
+    //   "user": { ... },
+    //   "token": "<plainTextToken>"
+    //   // мы не возвращаем expires_at на фронт
+    // }
+
     if (response.data.token) {
+      // Сохраняем только токен (Bearer) в localStorage
       localStorage.setItem('api_token', response.data.token)
     }
-    // Переходим на /profile
+
+    // Переходим, например, на страницу профиля
     router.push('/profile')
   })
   .catch(error => {
     console.error('Registration error:', error.response?.data || error)
+
     if (error.response?.status === 422) {
-      // Собираем детальные сообщения из error.response.data.errors
+      // Laravel валидация
       const allErrors = error.response.data.errors || {}
-      // Пример структуры: { name: ["The name field is required."], email: [...], ... }
       let combined = []
       for (const field in allErrors) {
-        combined = combined.concat(allErrors[field]) // добавляем массив сообщений
+        combined = combined.concat(allErrors[field])
       }
       errorMessages.value = combined
     } else if (error.response?.status === 401) {

@@ -46,19 +46,34 @@ const errorMessage = ref('')
 
 // При сабмите
 function onSubmit() {
-  errorMessage.value = '' // сбрасываем ошибку
+  // Сбрасываем старое сообщение об ошибке
+  errorMessage.value = ''
 
   axios.post('http://127.0.0.1:8000/api/login', {
     email: email.value,
     password: password.value
   })
   .then(response => {
+    console.log('Login success:', response.data)
+    // Предположим, бэкенд возвращает JSON вида:
+    // {
+    //   "message": "Logged in successfully",
+    //   "token": "<plainTextToken>",
+    //   "user": { ... }
+    // }
+    // (Без expires_at, поскольку мы не используем локальную проверку)
+
     if (response.data.token) {
       localStorage.setItem('api_token', response.data.token)
     }
+
+    // Переходим на /profile
     router.push('/profile')
   })
   .catch(error => {
+    // При ошибке авторизации (401 / 422) выводим сообщение
+    console.error('Login error:', error.response?.data || error)
+
     if (error.response?.status === 422 || error.response?.status === 401) {
       errorMessage.value = 'Invalid credentials. Please check your Email/Password.'
     } else {
@@ -75,10 +90,10 @@ function onSubmit() {
 
 /* Дополнительные стили для div с ошибкой */
 .error-box {
-  color: red;              /* Текст красный */
-  background-color: #ffe5e5; /* Светло-красный фон (по желанию) */
-  padding: 0.5rem 1rem;   /* Отступы */
-  border-radius: 4px;     /* Скруглённые углы */
-  border: 1px solid red;  /* Красная рамка */
+  color: red;
+  background-color: #ffe5e5;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: 1px solid red;
 }
 </style>
