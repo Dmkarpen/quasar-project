@@ -2,35 +2,30 @@
   <q-layout view="lHh Lpr lFf" class="bg-layout">
     <q-header elevated>
       <q-toolbar>
+        <!-- Кнопка меню -->
         <q-btn flat dense round icon="menu" @click="toggleLeftDrawer" />
+
+        <!-- Название/логотип -->
         <q-toolbar-title>
+          <!-- Вместо "My Shop" используем перевод -->
           <router-link to="/" style="color: inherit; text-decoration: none">
-            My Shop
+            {{ t('layout.myShop') }}
           </router-link>
         </q-toolbar-title>
-        <q-space />
+
+        <!-- Кнопки переключения языка -->
+        <q-btn label="EN" color="yellow" text-color="primary" class="q-ml-md" @click="switchLang('en-US')" />
+        <q-btn label="RU" color="green" text-color="primary" class="q-ml-md" @click="switchLang('ru-RU')" />
 
         <!-- Иконка корзины -->
-        <div class="relative-badge">
+        <div class="relative-badge q-ml-md">
           <q-btn flat dense round icon="shopping_cart" @click="$router.push('/cart')" />
-          <q-badge
-            v-if="cartStore.itemCount > 0"
-            color="red"
-            floating
-            anchor="top right"
-            :label="cartStore.itemCount"
-            class="badge-style"
-          />
+          <q-badge v-if="cartStore.itemCount > 0" color="red" floating anchor="top right" :label="cartStore.itemCount"
+            class="badge-style" />
         </div>
 
         <!-- Кнопка пользователя -->
-        <q-btn
-          flat
-          dense
-          round
-          icon="person"
-          @click="goToProfileOrLogin"
-        />
+        <q-btn flat dense round icon="person" @click="goToProfileOrLogin" class="q-ml-md" />
       </q-toolbar>
     </q-header>
 
@@ -40,7 +35,8 @@
         <q-list>
           <q-item non-clickable>
             <q-item-section>
-              <div class="text-h6 q-pa-sm">Navigation</div>
+              <!-- Вместо "Navigation" -->
+              <div class="text-h6 q-pa-sm">{{ t('layout.navigation') }}</div>
             </q-item-section>
           </q-item>
           <q-separator />
@@ -49,14 +45,16 @@
             <q-item-section avatar>
               <q-icon name="home" />
             </q-item-section>
-            <q-item-section>Home</q-item-section>
+            <!-- Вместо "Home" -->
+            <q-item-section>{{ t('layout.home') }}</q-item-section>
           </q-item>
 
           <q-item clickable v-ripple @click="$router.push('/products')">
             <q-item-section avatar>
               <q-icon name="shopping_basket" />
             </q-item-section>
-            <q-item-section>Products</q-item-section>
+            <!-- Вместо "Products" -->
+            <q-item-section>{{ t('layout.products') }}</q-item-section>
           </q-item>
 
           <!-- Пункт меню "Profile" -->
@@ -64,28 +62,32 @@
             <q-item-section avatar>
               <q-icon name="account_circle" />
             </q-item-section>
-            <q-item-section>Profile</q-item-section>
+            <!-- Вместо "Profile" -->
+            <q-item-section>{{ t('layout.profile') }}</q-item-section>
           </q-item>
 
           <q-item clickable v-ripple @click="$router.push('/cart')">
             <q-item-section avatar>
               <q-icon name="shopping_cart" />
             </q-item-section>
-            <q-item-section>Cart</q-item-section>
+            <!-- Вместо "Cart" -->
+            <q-item-section>{{ t('layout.cart') }}</q-item-section>
           </q-item>
 
           <q-item clickable v-ripple @click="$router.push('/contact')">
             <q-item-section avatar>
               <q-icon name="mail_outline" />
             </q-item-section>
-            <q-item-section>Contact Us</q-item-section>
+            <!-- Вместо "Contact Us" -->
+            <q-item-section>{{ t('layout.contactUs') }}</q-item-section>
           </q-item>
 
           <q-item clickable v-ripple @click="$router.push('/about')">
             <q-item-section avatar>
               <q-icon name="info" />
             </q-item-section>
-            <q-item-section>About</q-item-section>
+            <!-- Вместо "About" -->
+            <q-item-section>{{ t('layout.about') }}</q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
@@ -102,7 +104,10 @@
         <div>
           <img :src="logo" alt="Site Icon" style="height: 40px" />
         </div>
-        <div class="text-body1">Ⓒ 2025 My Shop</div>
+        <!-- Вместо "Ⓒ 2025 My Shop" -->
+        <div class="text-body1">
+          © 2025 {{ t('layout.myShop') }}
+        </div>
       </q-toolbar>
     </q-footer>
   </q-layout>
@@ -114,6 +119,9 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from 'src/stores/cartStore'
 import logo from 'src/assets/logo.png'
 
+// Подключаем useI18n из vue-i18n
+import { useI18n } from 'vue-i18n'
+
 const router = useRouter()
 const leftDrawerOpen = ref(false)
 const cartStore = useCartStore()
@@ -122,10 +130,7 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
-/*
-   hasToken: проверяем только наличие "api_token" в localStorage.
-   Если token отсутствует, считаем, что пользователь не залогинен.
-*/
+// Проверяем токен
 const hasToken = computed(() => {
   return !!localStorage.getItem('api_token')
 })
@@ -137,6 +142,14 @@ function goToProfileOrLogin() {
     router.push('/auth/login')
   }
 }
+
+// Получаем locale и t из i18n
+const { locale, t } = useI18n()
+
+// Функция переключения языка
+function switchLang(lang) {
+  locale.value = lang
+}
 </script>
 
 <style scoped>
@@ -146,6 +159,7 @@ function goToProfileOrLogin() {
   background-repeat: no-repeat;
   background-size: cover;
 }
+
 .relative-badge {
   position: relative;
   display: inline-block;

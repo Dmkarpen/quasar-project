@@ -1,34 +1,42 @@
 <template>
   <q-page padding style="min-height: calc(100vh - 112px)">
     <div class="q-pa-md text-center" style="max-width: 400px; width: 100%">
-      <h1>Register</h1>
+      <!-- Заголовок "Register" (локализован) -->
+      <h1>{{ t('registerPage.heading') }}</h1>
 
-      <!-- Используем q-form -->
+      <!-- q-form -->
       <q-form @submit.prevent="onNativeSubmit">
         <!-- Поле name -->
-        <q-input filled v-model="name" label="Name" clearable :error="!!nameError" :error-message="nameError" />
-        <!-- Поле email -->
-        <q-input filled v-model="email" type="email" label="Email" clearable class="q-mt-md" :error="!!emailError"
-          :error-message="emailError" />
-        <!-- Поле password -->
-        <q-input filled v-model="password" type="password" label="Password" clearable class="q-mt-md"
-          :error="!!passwordError" :error-message="passwordError" />
-        <!-- Поле confirmPassword -->
-        <q-input filled v-model="confirmPassword" type="password" label="Confirm Password" clearable class="q-mt-md"
-          :error="!!confirmPasswordError" :error-message="confirmPasswordError" />
+        <q-input filled v-model="name" :label="t('registerPage.nameLabel')" clearable :error="!!nameError"
+          :error-message="nameError" />
 
-        <q-btn label="Register" type="submit" color="primary" class="q-mt-md" />
+        <!-- Поле email -->
+        <q-input filled v-model="email" type="email" :label="t('registerPage.emailLabel')" clearable class="q-mt-md"
+          :error="!!emailError" :error-message="emailError" />
+
+        <!-- Поле password -->
+        <q-input filled v-model="password" type="password" :label="t('registerPage.passwordLabel')" clearable
+          class="q-mt-md" :error="!!passwordError" :error-message="passwordError" />
+
+        <!-- Поле confirmPassword -->
+        <q-input filled v-model="confirmPassword" type="password" :label="t('registerPage.confirmPasswordLabel')"
+          clearable class="q-mt-md" :error="!!confirmPasswordError" :error-message="confirmPasswordError" />
+
+        <q-btn :label="t('registerPage.registerBtn')" type="submit" color="primary" class="q-mt-md" />
       </q-form>
 
-      <!-- Блок для вывода ошибок с бэкенда (Laravel) -->
+      <!-- Ошибки с бэкенда (422, 401, и т. д.) -->
       <div v-if="errorMessages.length" class="error-box q-mt-md bigger-alert">
         <ul>
           <li v-for="(msg, i) in errorMessages" :key="i">{{ msg }}</li>
         </ul>
       </div>
 
+      <!-- Ссылка на логин -->
       <div class="q-mt-md">
-        <router-link to="/auth/login">Already have an account? Login</router-link>
+        <router-link to="/auth/login">
+          {{ t('registerPage.alreadyHaveAccount') }}
+        </router-link>
       </div>
     </div>
   </q-page>
@@ -39,85 +47,78 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 
-// Импорт из vee-validate
+// VeeValidate & Yup
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
-// 1) Определяем схему Yup
+// Подключаем useI18n
+import { useI18n } from 'vue-i18n'
+
+// Получаем { t } для переводов
+const { t } = useI18n()
+
+// Определяем схему Yup, используя локализованные сообщения
 const schema = yup.object({
   name: yup
     .string()
-    .required('Name is required')
-    .max(255, 'Name must be at most 255 characters')
+    .required(t('registerPage.validation.nameRequired'))
+    .max(255, t('registerPage.validation.nameMax'))
     .test(
       'not-only-spaces',
-      'Name cannot be only spaces',
+      t('registerPage.validation.nameNoSpaces'),
       value => !!value && value.trim().length > 0
     )
     .test(
       'not-only-digits',
-      'Name cannot be only digits',
+      t('registerPage.validation.nameNoDigits'),
       value => {
         if (!value) return false
-        // Проверяем, не состоит ли строка только из цифр
         return !/^\d+$/.test(value.trim())
       }
     ),
 
   email: yup
     .string()
-    .required('Email is required')
-    .email('Invalid email format')
-    // 1) Запрещаем пробелы
+    .required(t('registerPage.validation.emailRequired'))
+    .email(t('registerPage.validation.emailFormat'))
     .test(
       'no-spaces',
-      'Email cannot contain spaces',
-      value => {
-        if (!value) return false
-        // Проверяем, что нет пробелов
-        return !/\s/.test(value)
-      }
+      t('registerPage.validation.emailNoSpaces'),
+      value => !!value && !/\s/.test(value)
     )
-    // 2) Требуем точку после @
     .test(
       'has-dot-in-domain',
-      'Email domain must contain a dot',
+      t('registerPage.validation.emailDomainDot'),
       value => {
         if (!value) return false
         const domainPart = value.split('@')[1]
-        // Если нет доменной части (нет '@' или строка пустая)
         if (!domainPart) return false
-        // Проверяем, есть ли точка в доменной части
         return domainPart.includes('.')
       }
     ),
 
   password: yup
     .string()
-    .required('Password is required')
-    .min(8, 'Password must be at least 8 characters')
+    .required(t('registerPage.validation.passRequired'))
+    .min(8, t('registerPage.validation.passMin'))
     .test(
       'no-spaces',
-      'Password cannot contain spaces',
-      value => {
-        if (!value) return false
-        // Запрещаем любые пробелы (пробел, табуляция, перевод строки и т. д.)
-        return !/\s/.test(value)
-      }
+      t('registerPage.validation.passNoSpaces'),
+      value => !!value && !/\s/.test(value)
     ),
 
   confirmPassword: yup
     .string()
-    .oneOf([yup.ref('password')], 'Passwords must match')
-    .required('Please confirm your password'),
+    .oneOf([yup.ref('password')], t('registerPage.validation.passMatch'))
+    .required(t('registerPage.validation.passConfirm'))
 })
 
-// 2) Инициализируем useForm, привязываем схему
+// Инициализируем useForm
 const { handleSubmit } = useForm({
-  validationSchema: schema,
+  validationSchema: schema
 })
 
-// 3) Привязываем поля
+// Привязываем поля
 const { value: name, errorMessage: nameError } = useField('name')
 const { value: email, errorMessage: emailError } = useField('email')
 const { value: password, errorMessage: passwordError } = useField('password')
@@ -130,18 +131,16 @@ const errorMessages = ref([])
 // Роутер
 const router = useRouter()
 
-// 4) Функция сабмита, вызывается если локальная валидация прошла
+// Функция сабмита
 async function onSubmit(values) {
-  // Сбрасываем ошибки бэкенда
   errorMessages.value = []
 
   try {
-    // Отправляем запрос на сервер
     const response = await axios.post('http://127.0.0.1:8000/api/register', {
       name: values.name,
       email: values.email,
       password: values.password,
-      password_confirmation: values.confirmPassword,
+      password_confirmation: values.confirmPassword
     })
 
     console.log('Registration success:', response.data)
@@ -149,11 +148,9 @@ async function onSubmit(values) {
       localStorage.setItem('api_token', response.data.token)
     }
 
-    // Переходим на /profile
     router.push('/profile')
   } catch (error) {
     console.error('Registration error:', error.response?.data || error)
-    // Обрабатываем ошибки с бэкенда (Laravel)
     if (error.response?.status === 422) {
       const allErrors = error.response.data.errors || {}
       let combined = []
@@ -162,15 +159,14 @@ async function onSubmit(values) {
       }
       errorMessages.value = combined
     } else if (error.response?.status === 401) {
-      errorMessages.value = ['You are not authorized to register.']
+      errorMessages.value = [t('registerPage.notAuthorized')]
     } else {
-      errorMessages.value = ['Something went wrong. Please try again.']
+      errorMessages.value = [t('registerPage.somethingWrong')]
     }
   }
 }
 
-// 5) Из-за q-form, сабмит перехватывается Quasar
-// Поэтому вызываем handleSubmit(onSubmit) вручную
+// Вызываем handleSubmit(onSubmit) вручную из-за q-form
 function onNativeSubmit() {
   handleSubmit(onSubmit)()
 }

@@ -7,49 +7,54 @@
       <q-toolbar>
         <!-- Кнопка для открытия бокового меню (drawer) -->
         <q-btn flat round dense icon="menu" @click="toggleLeftDrawer" />
-        <!-- Заголовок, обернутый в router-link для перехода на главную страницу -->
+
+        <!-- Заголовок (с переводом) -->
         <q-toolbar-title>
-          <router-link to="/" style="color: inherit; text-decoration: none"> My Shop </router-link>
+          <router-link to="/" style="color: inherit; text-decoration: none">
+            {{ t('userLayout.myShop') }}
+          </router-link>
         </q-toolbar-title>
+
+        <!-- Кнопки переключения языка -->
+        <q-btn label="EN" color="yellow" text-color="primary" class="q-ml-md" @click="switchLang('en-US')" />
+        <q-btn label="RU" color="green" text-color="primary" class="q-ml-md" @click="switchLang('ru-RU')" />
       </q-toolbar>
 
       <!-- Второй ряд header – q-tabs с вкладками для логина и регистрации -->
       <q-tabs>
-        <!-- Вкладка "Login": при клике переходит на страницу /auth/login -->
-        <q-route-tab icon="login" to="/auth/login" replace label="Login" />
-        <!-- Вкладка "Register": при клике переходит на страницу /auth/register -->
-        <q-route-tab icon="person_add" to="/auth/register" replace label="Register" />
+        <!-- Вкладка "Login" (перевод) -->
+        <q-route-tab icon="login" to="/auth/login" replace :label="t('userLayout.login')" />
+        <!-- Вкладка "Register" (перевод) -->
+        <q-route-tab icon="person_add" to="/auth/register" replace :label="t('userLayout.register')" />
       </q-tabs>
     </q-header>
 
     <!-- DRAWER: Боковое меню -->
     <q-drawer v-model="leftDrawerOpen" side="left" bordered class="bg-grey-2">
-      <!-- Область с прокруткой для бокового меню -->
       <q-scroll-area class="fit q-pa-sm">
         <q-list>
-          <!-- Заголовок бокового меню -->
+          <!-- Заголовок бокового меню (перевод) -->
           <q-item non-clickable>
             <q-item-section>
-              <div class="text-h6 q-pa-sm">Navigation</div>
+              <div class="text-h6 q-pa-sm">{{ t('userLayout.navigation') }}</div>
             </q-item-section>
           </q-item>
-          <!-- Разделитель между заголовком и списком пунктов меню -->
           <q-separator />
 
-          <!-- Пункт "Home" -->
           <q-item clickable v-ripple @click="$router.push('/')">
             <q-item-section avatar>
               <q-icon name="home" />
             </q-item-section>
-            <q-item-section> Home </q-item-section>
+            <!-- "Home" (перевод) -->
+            <q-item-section>{{ t('userLayout.home') }}</q-item-section>
           </q-item>
 
-          <!-- Пункт "Products" -->
           <q-item clickable v-ripple @click="$router.push('/products')">
             <q-item-section avatar>
               <q-icon name="shopping_basket" />
             </q-item-section>
-            <q-item-section> Products </q-item-section>
+            <!-- "Products" (перевод) -->
+            <q-item-section>{{ t('userLayout.products') }}</q-item-section>
           </q-item>
 
           <!-- Пункт "Profile" -->
@@ -57,31 +62,32 @@
             <q-item-section avatar>
               <q-icon name="account_circle" />
             </q-item-section>
-            <q-item-section> Profile </q-item-section>
+            <!-- "Profile" (перевод) -->
+            <q-item-section>{{ t('userLayout.profile') }}</q-item-section>
           </q-item>
 
-          <!-- Пункт "Cart" -->
           <q-item clickable v-ripple @click="$router.push('/cart')">
             <q-item-section avatar>
               <q-icon name="shopping_cart" />
             </q-item-section>
-            <q-item-section> Cart </q-item-section>
+            <!-- "Cart" (перевод) -->
+            <q-item-section>{{ t('userLayout.cart') }}</q-item-section>
           </q-item>
 
-          <!-- Пункт "Contact Us" -->
           <q-item clickable v-ripple @click="$router.push('/contact')">
             <q-item-section avatar>
               <q-icon name="mail_outline" />
             </q-item-section>
-            <q-item-section> Contact Us </q-item-section>
+            <!-- "Contact Us" (перевод) -->
+            <q-item-section>{{ t('userLayout.contactUs') }}</q-item-section>
           </q-item>
 
-          <!-- Пункт "About" -->
           <q-item clickable v-ripple @click="$router.push('/about')">
             <q-item-section avatar>
               <q-icon name="info" />
             </q-item-section>
-            <q-item-section> About </q-item-section>
+            <!-- "About" (перевод) -->
+            <q-item-section>{{ t('userLayout.about') }}</q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
@@ -99,18 +105,20 @@
         <div>
           <img :src="logo" alt="Site Icon" style="height: 40px" />
         </div>
-        <!-- Правая часть футера: Текст -->
-        <div class="text-body1">Ⓒ 2025 My Shop</div>
+        <!-- Правая часть футера: "© 2025 My Shop" (перевод) -->
+        <div class="text-body1">
+          © 2025 {{ t('userLayout.myShop') }}
+        </div>
       </q-toolbar>
     </q-footer>
   </q-layout>
 </template>
 
 <script setup>
-// Импортируем ref для создания реактивных переменных
 import { ref } from 'vue'
-// Импортируем PNG-иконку сайта
 import logo from 'src/assets/logo.png'
+// Подключаем useI18n из vue-i18n
+import { useI18n } from 'vue-i18n'
 
 // Реактивная переменная для управления состоянием бокового меню (drawer)
 const leftDrawerOpen = ref(false)
@@ -119,10 +127,17 @@ const leftDrawerOpen = ref(false)
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
+
+// Получаем доступ к locale и t через useI18n()
+const { locale, t } = useI18n()
+
+// Функция переключения языка
+function switchLang(lang) {
+  locale.value = lang
+}
 </script>
 
 <style scoped>
-/* Стили для основного фона layout */
 .bg-layout {
   background-color: #e0f7fa;
   background-position: center center;
@@ -130,7 +145,6 @@ function toggleLeftDrawer() {
   background-size: cover;
 }
 
-/* Класс для обёртки иконки корзины с бейджем */
 .relative-badge {
   position: relative;
   display: inline-block;

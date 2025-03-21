@@ -1,18 +1,21 @@
 <template>
   <q-page padding style="min-height: calc(100vh - 112px)">
     <div class="q-pa-md text-center" style="max-width: 400px; width: 100%">
-      <h1>Login</h1>
+      <!-- Заголовок, вместо "Login" -->
+      <h1>{{ t('loginPage.heading') }}</h1>
 
-      <!-- q-form -->
+      <!-- Форма (q-form) -->
       <q-form @submit.prevent="onNativeSubmit">
         <!-- Поле email -->
-        <q-input filled v-model="email" type="email" label="Email" clearable :error="!!emailError"
+        <q-input filled v-model="email" type="email" :label="t('loginPage.emailLabel')" clearable :error="!!emailError"
           :error-message="emailError" />
-        <!-- Поле password -->
-        <q-input filled v-model="password" type="password" label="Password" clearable class="q-mt-md"
-          :error="!!passwordError" :error-message="passwordError" />
 
-        <q-btn label="Login" type="submit" color="primary" class="q-mt-md" />
+        <!-- Поле password -->
+        <q-input filled v-model="password" type="password" :label="t('loginPage.passwordLabel')" clearable
+          class="q-mt-md" :error="!!passwordError" :error-message="passwordError" />
+
+        <!-- Кнопка "Login" -->
+        <q-btn :label="t('loginPage.loginBtn')" type="submit" color="primary" class="q-mt-md" />
       </q-form>
 
       <!-- Ошибка бэкенда (401 / 422 и т. д.) -->
@@ -20,8 +23,9 @@
         {{ errorMessage }}
       </div>
 
+      <!-- Ссылка на регистрацию -->
       <div class="q-mt-md">
-        <router-link to="/auth/register">Don't have an account? Register</router-link>
+        <router-link to="/auth/register">{{ t('loginPage.dontHaveAccount') }}</router-link>
       </div>
     </div>
   </q-page>
@@ -32,46 +36,47 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
-// VeeValidate
+// VeeValidate & Yup
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
-// 1) Определяем схему Yup
+// Импортируем useI18n для локализации
+import { useI18n } from 'vue-i18n'
+
+// 1) Получаем { t } из useI18n()
+const { t } = useI18n()
+
+// 2) Определяем схему Yup, используя локализованные сообщения
 const schema = yup.object({
   email: yup
     .string()
-    .required('Email is required')
-    .email('Invalid email format')
-    // 1) Запрещаем пробелы
+    .required(t('loginPage.validation.emailRequired'))
+    .email(t('loginPage.validation.emailFormat'))
     .test(
       'no-spaces',
-      'Email cannot contain spaces',
+      t('loginPage.validation.emailNoSpaces'),
       value => {
         if (!value) return false
-        // Проверяем, что нет пробелов
         return !/\s/.test(value)
       }
     )
-    // 2) Требуем точку после @
     .test(
       'has-dot-in-domain',
-      'Email domain must contain a dot',
+      t('loginPage.validation.emailDomainDot'),
       value => {
         if (!value) return false
         const domainPart = value.split('@')[1]
-        // Если нет доменной части (нет '@' или строка пустая)
         if (!domainPart) return false
-        // Проверяем, есть ли точка в доменной части
         return domainPart.includes('.')
       }
     ),
   password: yup
     .string()
-    .required('Password is required')
-    .min(8, 'Password must be at least 8 characters')
+    .required(t('loginPage.validation.passRequired'))
+    .min(8, t('loginPage.validation.passMin'))
     .test(
       'no-spaces',
-      'Password cannot contain spaces',
+      t('loginPage.validation.passNoSpaces'),
       value => {
         if (!value) return false
         return !/\s/.test(value)
@@ -79,24 +84,23 @@ const schema = yup.object({
     ),
 })
 
-// 2) Инициализируем useForm с этой схемой
+// 3) Инициализируем useForm
 const { handleSubmit } = useForm({
-  validationSchema: schema,
+  validationSchema: schema
 })
 
-// 3) Привязываем поля
+// 4) Привязываем поля
 const { value: email, errorMessage: emailError } = useField('email')
 const { value: password, errorMessage: passwordError } = useField('password')
 
-// Переменная для ошибок с бэкенда
+// Ошибка с бэкенда
 const errorMessage = ref('')
 
 // Роутер
 const router = useRouter()
 
-// 4) Функция при успешной локальной валидации
+// 5) Функция при успешной локальной валидации
 async function onSubmit(values) {
-  // Очищаем старое сообщение
   errorMessage.value = ''
 
   try {
@@ -106,25 +110,22 @@ async function onSubmit(values) {
     })
     console.log('Login success:', response.data)
 
-    // Если сервер вернул токен
     if (response.data.token) {
       localStorage.setItem('api_token', response.data.token)
     }
 
-    // Переходим на /profile
     router.push('/profile')
   } catch (error) {
     console.error('Login error:', error.response?.data || error)
-
     if (error.response?.status === 422 || error.response?.status === 401) {
-      errorMessage.value = 'Invalid credentials. Please check your Email/Password.'
+      errorMessage.value = t('loginPage.invalidCreds')
     } else {
-      errorMessage.value = 'Something went wrong. Please try again.'
+      errorMessage.value = t('loginPage.somethingWrong')
     }
   }
 }
 
-// 5) Поскольку используем <q-form>, нужно вручную вызывать handleSubmit(onSubmit)
+// q-form вызывает onNativeSubmit => handleSubmit(onSubmit)
 function onNativeSubmit() {
   handleSubmit(onSubmit)()
 }

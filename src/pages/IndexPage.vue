@@ -1,54 +1,44 @@
 <template>
-  <!-- Основной контейнер страницы с отступами и центровкой содержимого -->
+  <!-- Основной контейнер страницы -->
   <q-page padding class="flex flex-center">
-    <!-- Внутренний блок для контента страницы с ограниченной шириной и выравниванием по центру -->
     <div class="q-pa-md text-center" style="max-width: 600px; width: 100%">
-      <!-- Заголовок главной страницы -->
-      <h1 class="text-center">Welcome to My Shop!</h1>
+      <!-- Заголовок -->
+      <h1 class="text-center">{{ t('index.heading') }}</h1>
 
-      <!-- Карусель баннеров с добавленными стрелками для навигации -->
-      <q-carousel
-        v-model="slide"
-        swipeable
-        animated
-        navigation
-        arrows
-        control-color="white"
-        height="300px"
-        class="q-mb-md"
-      >
-        <!-- Перебор массива баннеров. Каждый баннер отображается с помощью q-carousel-slide -->
-        <q-carousel-slide
-          v-for="(banner, index) in banners"
-          :key="index"
-          :name="index"
-          :img-src="banner"
-        />
+      <!-- Карусель баннеров -->
+      <q-carousel v-model="slide" swipeable animated navigation arrows control-color="white" height="300px"
+        class="q-mb-md">
+        <q-carousel-slide v-for="(banner, index) in banners" :key="index" :name="index" :img-src="banner" />
       </q-carousel>
 
-      <!-- Остальной контент страницы (например, описание, кнопка "View Products" и т.д.) -->
-      <p>We are glad to have you here. Discover high-quality products at the best prices.</p>
-      <q-btn label="View Products" color="primary" @click="$router.push('/products')" />
+      <!-- Описание -->
+      <p>{{ t('index.description') }}</p>
+
+      <!-- Кнопка "View Products" -->
+      <q-btn :label="t('index.viewProducts')" color="primary" @click="$router.push('/products')" />
     </div>
   </q-page>
 </template>
 
 <script setup>
-// Импортируем ref для создания реактивных переменных
 import { ref } from 'vue'
+// Подключаем useI18n из vue-i18n
+import { useI18n } from 'vue-i18n'
 
-// Импорт изображений баннеров из папки src/assets
+// Импорт изображений
 import banner1 from 'src/assets/banner1.jpg'
 import banner2 from 'src/assets/banner2.jpg'
 import banner3 from 'src/assets/banner3.jpg'
 
-// Массив баннеров с импортированными изображениями
+// Массив баннеров
 const banners = ref([banner1, banner2, banner3])
-
-// Реактивная переменная для хранения номера текущего слайда
+// Текущий слайд
 const slide = ref(0)
+
+// Получаем функцию перевода
+const { t } = useI18n()
 </script>
 
 <style scoped>
-/* Здесь можно добавить дополнительные стили для баннеров, если необходимо */
+/* Дополнительные стили при необходимости */
 </style>
