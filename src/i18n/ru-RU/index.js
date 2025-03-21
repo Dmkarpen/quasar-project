@@ -47,6 +47,19 @@ export default {
     subject: "Тема",
     message: "Сообщение",
     send: "Отправить",
+    success: "Ваше сообщение успешно отправлено!",
+
+    validation: {
+      nameRequired: "Введите имя",
+      nameMax: "Максимум 255 символов",
+      notOnlySpaces: "Поле не может состоять только из пробелов",
+      emailRequired: "Введите Email",
+      emailFormat: "Неверный формат Email",
+      subjectRequired: "Введите тему сообщения",
+      subjectMax: "Максимум 255 символов",
+      messageRequired: "Введите сообщение",
+      messageMin: "Минимальная длина сообщения — 10 символов",
+    },
   },
 
   errorNotFound: {

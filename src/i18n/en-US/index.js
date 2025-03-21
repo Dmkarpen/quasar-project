@@ -47,6 +47,19 @@ export default {
     subject: "Subject",
     message: "Message",
     send: "Send",
+    success: "Your message has been sent successfully!",
+
+    validation: {
+      nameRequired: "Name is required",
+      nameMax: "Name must be at most 255 characters",
+      notOnlySpaces: "Field cannot be only spaces",
+      emailRequired: "Email is required",
+      emailFormat: "Invalid email format",
+      subjectRequired: "Subject is required",
+      subjectMax: "Subject must be at most 255 characters",
+      messageRequired: "Message is required",
+      messageMin: "Message must be at least 10 characters",
+    },
   },
 
   errorNotFound: {
