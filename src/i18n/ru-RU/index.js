@@ -82,6 +82,10 @@ export default {
     dontHaveAccount: "Нет аккаунта? Зарегистрируйтесь",
     invalidCreds: "Неверные учетные данные. Проверьте Email/Пароль.",
     somethingWrong: "Произошла ошибка. Попробуйте ещё раз.",
+    emailNotVerified:
+      "Ваш email ещё не подтверждён. Пожалуйста, проверьте почту.",
+    resend: "Отправить письмо повторно",
+    resentSuccess: "Письмо отправлено повторно. Проверьте почту.",
 
     validation: {
       emailRequired: "Укажите Email",
@@ -102,7 +106,10 @@ export default {
     confirmPasswordLabel: "Подтвердите пароль",
     registerBtn: "Зарегистрироваться",
     alreadyHaveAccount: "Уже есть аккаунт? Войти",
-
+    successTitle: "Регистрация успешна!",
+    successText:
+      "Мы отправили письмо на вашу почту. Подтвердите e-mail, чтобы войти.",
+    goToLogin: "Перейти ко входу",
     notAuthorized: "У вас нет прав для регистрации.",
     somethingWrong: "Произошла ошибка. Попробуйте снова.",
 
@@ -140,5 +147,13 @@ export default {
     hello: "Привет",
     yourEmail: "Ваш email",
     logoutBtn: "Выйти",
+  },
+
+  verified: {
+    title: "Email подтвержден",
+    description:
+      "Ваш email успешно подтвержден. Теперь вы можете войти в систему.",
+    closingIn: "Страница будет закрыта через",
+    manualClose: "Вы можете закрыть эту страницу вручную и вернуться к входу.",
   },
 };

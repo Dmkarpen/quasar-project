@@ -1,42 +1,58 @@
 <template>
-  <q-page padding style="min-height: calc(100vh - 112px)">
+  <q-page padding style="min-height: calc(100vh - 112px)" class="relative-position">
+    <q-inner-loading :showing="loading" class="dark-overlay">
+      <q-spinner size="50px" color="primary" />
+    </q-inner-loading>
+
     <div class="q-pa-md text-center" style="max-width: 400px; width: 100%">
-      <!-- Заголовок "Register" (локализован) -->
+
       <h1>{{ t('registerPage.heading') }}</h1>
 
-      <!-- q-form -->
-      <q-form @submit.prevent="onNativeSubmit">
-        <!-- Поле name -->
-        <q-input filled v-model="name" :label="t('registerPage.nameLabel')" clearable :error="!!nameError"
-          :error-message="nameError" />
-
-        <!-- Поле email -->
-        <q-input filled v-model="email" type="email" :label="t('registerPage.emailLabel')" clearable class="q-mt-md"
-          :error="!!emailError" :error-message="emailError" />
-
-        <!-- Поле password -->
-        <q-input filled v-model="password" type="password" :label="t('registerPage.passwordLabel')" clearable
-          class="q-mt-md" :error="!!passwordError" :error-message="passwordError" />
-
-        <!-- Поле confirmPassword -->
-        <q-input filled v-model="confirmPassword" type="password" :label="t('registerPage.confirmPasswordLabel')"
-          clearable class="q-mt-md" :error="!!confirmPasswordError" :error-message="confirmPasswordError" />
-
-        <q-btn :label="t('registerPage.registerBtn')" type="submit" color="primary" class="q-mt-md" />
-      </q-form>
-
-      <!-- Ошибки с бэкенда (422, 401, и т. д.) -->
-      <div v-if="errorMessages.length" class="error-box q-mt-md bigger-alert">
-        <ul>
-          <li v-for="(msg, i) in errorMessages" :key="i">{{ msg }}</li>
-        </ul>
+      <!-- Успешная регистрация -->
+      <div v-if="success" class="q-mt-lg">
+        <q-icon name="mark_email_read" size="64px" color="primary" class="q-mb-md" />
+        <div class="text-h6 q-mb-sm">{{ t('registerPage.successTitle') }}</div>
+        <p class="text-subtitle2 q-mb-md">{{ t('registerPage.successText') }}</p>
+        <q-btn to="/auth/login" color="primary" :label="t('registerPage.goToLogin')" icon="login" no-caps />
       </div>
 
-      <!-- Ссылка на логин -->
-      <div class="q-mt-md">
-        <router-link to="/auth/login">
-          {{ t('registerPage.alreadyHaveAccount') }}
-        </router-link>
+      <!-- ❗ Всё остальное — в v-else, чтобы скрывалось после success -->
+      <div v-else>
+        <!-- Ошибки с бэкенда -->
+        <q-card v-if="errorMessages.length" class="bg-red-1 text-black q-pa-md q-mb-md" flat bordered>
+          <div class="row items-center q-col-gutter-sm">
+            <q-icon name="error_outline" size="24px" color="red-8" />
+            <div class="col text-left">
+              <div v-for="(msg, i) in errorMessages" :key="i" class="text-body1">
+                {{ msg }}
+              </div>
+            </div>
+          </div>
+        </q-card>
+
+        <!-- Форма регистрации -->
+        <q-form @submit.prevent="onNativeSubmit">
+          <q-input filled v-model="name" :label="t('registerPage.nameLabel')" clearable :error="!!nameError"
+            :error-message="nameError" />
+
+          <q-input filled v-model="email" type="email" :label="t('registerPage.emailLabel')" clearable class="q-mt-md"
+            :error="!!emailError" :error-message="emailError" />
+
+          <q-input filled v-model="password" type="password" :label="t('registerPage.passwordLabel')" clearable
+            class="q-mt-md" :error="!!passwordError" :error-message="passwordError" />
+
+          <q-input filled v-model="confirmPassword" type="password" :label="t('registerPage.confirmPasswordLabel')"
+            clearable class="q-mt-md" :error="!!confirmPasswordError" :error-message="confirmPasswordError" />
+
+          <q-btn :label="t('registerPage.registerBtn')" type="submit" color="primary" class="q-mt-md" />
+        </q-form>
+
+        <!-- Ссылка на логин -->
+        <div class="q-mt-md">
+          <router-link to="/auth/login">
+            {{ t('registerPage.alreadyHaveAccount') }}
+          </router-link>
+        </div>
       </div>
     </div>
   </q-page>
@@ -54,10 +70,10 @@ import * as yup from 'yup'
 // Подключаем useI18n
 import { useI18n } from 'vue-i18n'
 
-// Получаем { t } для переводов
 const { t } = useI18n()
 
-// Определяем схему Yup, используя локализованные сообщения
+const loading = ref(false)
+
 const schema = yup.object({
   name: yup
     .string()
@@ -113,42 +129,34 @@ const schema = yup.object({
     .required(t('registerPage.validation.passConfirm'))
 })
 
-// Инициализируем useForm
 const { handleSubmit } = useForm({
   validationSchema: schema
 })
 
-// Привязываем поля
 const { value: name, errorMessage: nameError } = useField('name')
 const { value: email, errorMessage: emailError } = useField('email')
 const { value: password, errorMessage: passwordError } = useField('password')
 const { value: confirmPassword, errorMessage: confirmPasswordError } =
   useField('confirmPassword')
 
-// Храним ошибки с бэкенда
 const errorMessages = ref([])
+const success = ref(false)
 
-// Роутер
 const router = useRouter()
 
-// Функция сабмита
 async function onSubmit(values) {
   errorMessages.value = []
+  loading.value = true
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/api/register', {
+    await axios.post('http://127.0.0.1:8000/api/register', {
       name: values.name,
       email: values.email,
       password: values.password,
       password_confirmation: values.confirmPassword
     })
 
-    console.log('Registration success:', response.data)
-    if (response.data.token) {
-      localStorage.setItem('api_token', response.data.token)
-    }
-
-    router.push('/profile')
+    success.value = true
   } catch (error) {
     console.error('Registration error:', error.response?.data || error)
     if (error.response?.status === 422) {
@@ -163,25 +171,19 @@ async function onSubmit(values) {
     } else {
       errorMessages.value = [t('registerPage.somethingWrong')]
     }
+  } finally {
+    loading.value = false
   }
 }
 
-// Вызываем handleSubmit(onSubmit) вручную из-за q-form
 function onNativeSubmit() {
   handleSubmit(onSubmit)()
 }
 </script>
 
 <style scoped>
-.bigger-alert {
-  font-size: 1.2rem;
-}
-
-.error-box {
-  color: red;
-  background-color: #ffe5e5;
-  border: 1px solid red;
-  border-radius: 4px;
-  padding: 0.5rem;
+.dark-overlay {
+  background-color: rgba(0, 0, 0, 0.3);
+  /* темне прозоре затемнення */
 }
 </style>

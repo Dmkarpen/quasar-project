@@ -82,6 +82,9 @@ export default {
     dontHaveAccount: "Don't have an account? Register",
     invalidCreds: "Invalid credentials. Please check your Email/Password.",
     somethingWrong: "Something went wrong. Please try again.",
+    emailNotVerified: "Your email is not verified. Please check your inbox.",
+    resend: "Resend verification email",
+    resentSuccess: "Verification email resent. Please check your inbox.",
 
     validation: {
       emailRequired: "Email is required",
@@ -102,7 +105,10 @@ export default {
     confirmPasswordLabel: "Confirm Password",
     registerBtn: "Register",
     alreadyHaveAccount: "Already have an account? Login",
-
+    successTitle: "Registration Successful!",
+    successText:
+      "We’ve sent a verification email. Please confirm it before logging in.",
+    goToLogin: "Go to Login",
     notAuthorized: "You are not authorized to register.",
     somethingWrong: "Something went wrong. Please try again.",
 
@@ -140,5 +146,13 @@ export default {
     hello: "Hello",
     yourEmail: "Your email",
     logoutBtn: "Logout",
+  },
+
+  verified: {
+    title: "Email Verified",
+    description:
+      "Your email has been successfully verified. You can now log in.",
+    closingIn: "This page will close in",
+    manualClose: "You can close this tab manually and return to login.",
   },
 };
