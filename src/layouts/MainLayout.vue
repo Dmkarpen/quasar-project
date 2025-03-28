@@ -149,6 +149,7 @@ const { locale, t } = useI18n()
 // Функция переключения языка
 function switchLang(lang) {
   locale.value = lang
+  localStorage.setItem('locale', lang)
 }
 </script>
 
