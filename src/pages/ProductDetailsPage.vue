@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
     <div v-if="product">
-      <q-card class="q-pa-md shadow-2 flat bordered">
+      <q-card flat class="bg-transparent q-pa-md">
 
         <!-- Слайдер с изображениями -->
         <q-carousel v-if="product.images && product.images.length" v-model="carouselIndex" navigation padding
@@ -64,7 +64,11 @@ const cartStore = useCartStore()
 onMounted(async () => {
   const id = route.params.id
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/api/products/${id}`)
+    const response = await axios.get(`http://127.0.0.1:8000/api/products/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('api_token')}`
+      }
+    })
     product.value = response.data
   } catch (error) {
     console.error('Ошибка при получении продукта:', error)

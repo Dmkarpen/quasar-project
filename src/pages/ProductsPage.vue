@@ -51,6 +51,25 @@
         direction-links boundary-links icon-prev="chevron_left" icon-next="chevron_right" icon-first="first_page"
         icon-last="last_page" />
     </div>
+
+    <!-- Карусель переглянутих товарів -->
+    <q-card class="q-mt-xl q-pa-md" v-if="viewedProducts.length">
+      <div class="text-h6 q-mb-md">{{ t('productsPage.recentlyViewed') }}</div>
+
+      <q-carousel v-model="carouselIndex" padding height="200px" arrows navigation-color="primary"
+        control-color="primary">
+        <q-carousel-slide v-for="(product, i) in viewedProducts" :key="product.id" :name="i">
+          <div class="row justify-center items-center q-gutter-md">
+            <q-img :src="product.images?.[0]?.url" :alt="product.title" style="width: 120px; height: 120px"
+              @click="goToProduct(product.id)" class="cursor-pointer" />
+            <div>
+              <div class="text-subtitle2">{{ product.title }}</div>
+              <div class="text-body2 text-primary">{{ product.price }} ₴</div>
+            </div>
+          </div>
+        </q-carousel-slide>
+      </q-carousel>
+    </q-card>
   </q-page>
 </template>
 
@@ -60,6 +79,8 @@ import { api } from 'boot/axios'
 import { useRouter } from 'vue-router'
 import { useCartStore } from 'src/stores/cartStore'
 import { watch } from 'vue'
+import { onMounted } from 'vue'
+import axios from 'axios'
 
 // Подключаем useI18n
 import { useI18n } from 'vue-i18n'
@@ -76,6 +97,10 @@ const cartStore = useCartStore()
 
 const currentPage = ref(1)
 const itemsPerPage = 10
+
+const user = ref(null)
+const viewedProducts = ref([])
+const carouselIndex = ref(0)
 
 function goToProduct(productId) {
   router.push(`/products/${productId}`)
@@ -137,6 +162,29 @@ watch(currentPage, () => {
     top: 0,
     behavior: 'smooth' // або 'auto' для миттєвого переходу
   })
+})
+
+// Завантажуємо переглянуті товари для залогіненого користувача
+onMounted(async () => {
+  const token = localStorage.getItem('api_token')
+
+  try {
+    const { data: userData } = await axios.get('http://127.0.0.1:8000/api/me', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    user.value = userData
+
+    if (user.value?.id) {
+      const { data: viewed } = await axios.get(`http://127.0.0.1:8000/api/products-viewed?user_id=${user.value.id}`)
+      viewedProducts.value = viewed
+    }
+
+  } catch (err) {
+    console.error('Не вдалося завантажити переглянуті товари:', err)
+  }
 })
 </script>
 

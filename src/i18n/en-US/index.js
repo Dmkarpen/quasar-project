@@ -139,6 +139,7 @@ export default {
     allCategories: "All categories",
     allProducts: "All products:",
     addToCart: "Add to Cart",
+    recentlyViewed: "Recently Viewed",
   },
 
   profilePage: {
@@ -157,7 +158,9 @@ export default {
   },
 
   productPage: {
-    addToCart: 'Add to Cart',
-    backToList: 'Back to Products'
+    addToCart: "Add to Cart",
+    backToList: "Back to Products",
+    recentlyViewed: "Recently Viewed Products",
+    noViewed: "No viewed products yet",
   },
 };

@@ -140,6 +140,7 @@ export default {
     allCategories: "Все категории",
     allProducts: "Все товары:",
     addToCart: "В корзину",
+    recentlyViewed: "Ранее просмотренные",
   },
 
   profilePage: {
@@ -160,5 +161,7 @@ export default {
   productPage: {
     addToCart: "Добавить в корзину",
     backToList: "Назад к товарам",
-  }
+    recentlyViewed: "Ранее просмотренные товары",
+    noViewed: "Нет просмотренных товаров",
+  },
 };
