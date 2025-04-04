@@ -30,7 +30,8 @@
 
     <!-- Список продуктов -->
     <q-list bordered separator>
-      <q-item v-for="product in filteredProducts" :key="product.id" clickable v-ripple @click="goToProduct(product.id)">
+      <q-item v-for="product in paginatedProducts" :key="product.id" clickable v-ripple
+        @click="goToProduct(product.id)">
         <q-item-section avatar>
           <q-img :src="product.thumbnail" :alt="product.title" style="width: 80px; height: 80px" />
         </q-item-section>
@@ -39,12 +40,17 @@
           <div class="text-h6">{{ product.title }}</div>
           <div class="text-subtitle2 text-primary">$ {{ product.price }}</div>
           <div class="text-body2 q-mt-xs">{{ product.description }}</div>
-          <!-- Кнопка "Add to Cart" (перевод) -->
           <q-btn :label="t('productsPage.addToCart')" color="primary" size="sm" class="q-mt-sm"
             @click.stop="addToCart(product)" />
         </q-item-section>
       </q-item>
     </q-list>
+
+    <div class="q-mt-md flex flex-center">
+      <q-pagination v-model="currentPage" :max="totalPages" max-pages="5" boundary-numbers color="primary" size="md"
+        direction-links boundary-links icon-prev="chevron_left" icon-next="chevron_right" icon-first="first_page"
+        icon-last="last_page" />
+    </div>
   </q-page>
 </template>
 
@@ -53,6 +59,7 @@ import { ref, computed } from 'vue'
 import { api } from 'boot/axios'
 import { useRouter } from 'vue-router'
 import { useCartStore } from 'src/stores/cartStore'
+import { watch } from 'vue'
 
 // Подключаем useI18n
 import { useI18n } from 'vue-i18n'
@@ -66,6 +73,9 @@ const categoryFilter = ref('all')
 
 const router = useRouter()
 const cartStore = useCartStore()
+
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 function goToProduct(productId) {
   router.push(`/products/${productId}`)
@@ -108,6 +118,25 @@ const filteredProducts = computed(() => {
     filtered = filtered.filter(p => p.category.toLowerCase() === cat)
   }
   return filtered
+})
+
+// Після фільтрації — нарізаємо на сторінки
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredProducts.value.slice(start, end)
+})
+
+// Для підрахунку загальної кількості сторінок
+const totalPages = computed(() => {
+  return Math.ceil(filteredProducts.value.length / itemsPerPage)
+})
+
+watch(currentPage, () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' // або 'auto' для миттєвого переходу
+  })
 })
 </script>
 

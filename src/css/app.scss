@@ -1,29 +1,38 @@
-// app global css in SCSS form
 body {
-  font-family: 'Roboto', sans-serif; /* Задаем глобальный шрифт */
-  background-color: #f5f5f5; /* Цвет фона для всего приложения */
-  color: #333; /* Основной цвет текста */
+  font-family: "Roboto", sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
   margin: 0;
   padding: 0;
 }
 
-/* Пример переопределения стилей для всех q-page */
+/* Единый фон для всех страниц */
 .q-page {
-  background-color: #c4dcf8; /* Белый фон для страниц */
+  background-color: #c4dcf8;
 }
 
-/* Пример глобального стиля для заголовков */
+/* Единый фон для всех карточек */
+.q-card {
+  background-color: #c4dcf8;
+}
+
+/* Глобальные стили для заголовков */
 h1,
 h2,
 h3,
 .text-h1,
 .text-h2,
 .text-h3 {
-  font-family: 'Montserrat', sans-serif; /* Другой шрифт для заголовков */
-  color: #1976d2; /* Пример цвета для заголовков */
+  font-family: "Montserrat", sans-serif;
+  color: #1976d2;
 }
 
 h1 {
-  font-size: 3rem; // задайте нужное значение, например, 3rem, 32px и т.д.
+  font-size: 3rem;
   font-weight: bold;
+}
+
+// Стили для q-carousel
+.q-carousel {
+  background-color: #c4dcf8 !important;
 }

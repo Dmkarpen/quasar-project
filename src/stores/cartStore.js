@@ -1,46 +1,50 @@
-import { defineStore } from 'pinia'
+import { defineStore } from "pinia";
 
-// Создаем Pinia store с именем "cart" для управления состоянием корзины товаров
-export const useCartStore = defineStore('cart', {
-  // Состояние (state) магазина: здесь хранится массив товаров, добавленных в корзину
+// Загружаем сохранённые данные (если есть)
+const savedItems = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+export const useCartStore = defineStore("cart", {
   state: () => ({
-    items: [], // Массив объектов, каждый из которых представляет товар в корзине
+    items: savedItems, // Массив товаров с localStorage
   }),
 
-  // Действия (actions) для изменения состояния корзины
   actions: {
-    // Функция для добавления товара в корзину
     addToCart(product) {
-      // Проверяем, существует ли уже товар с таким же id в корзине
-      const existing = this.items.find((item) => item.id === product.id)
+      const existing = this.items.find((item) => item.id === product.id);
       if (existing) {
-        // Если товар найден, увеличиваем его количество на 1
-        existing.quantity += 1
+        existing.quantity += 1;
       } else {
-        // Если товара нет, добавляем новый объект товара с полями товара и количеством, равным 1
-        this.items.push({ ...product, quantity: 1 })
+        this.items.push({ ...product, quantity: 1 });
       }
+
+      // Сохраняем в localStorage
+      this.saveCart();
     },
 
-    // Функция для удаления товара из корзины по его id
     removeFromCart(productId) {
-      // Фильтруем массив, оставляя только те товары, у которых id не совпадает с productId
-      this.items = this.items.filter((item) => item.id !== productId)
+      this.items = this.items.filter((item) => item.id !== productId);
+      this.saveCart();
     },
 
-    // Функция для очистки корзины (удаления всех товаров)
     clearCart() {
-      this.items = []
+      this.items = [];
+      this.saveCart();
+    },
+
+    // 🆕 Метод сохранения корзины в localStorage
+    saveCart() {
+      localStorage.setItem("cartItems", JSON.stringify(this.items));
     },
   },
 
-  // Геттеры (getters) позволяют вычислять значения на основе состояния
   getters: {
-    // Геттер для вычисления общей стоимости товаров в корзине
     totalPrice: (state) =>
-      state.items.reduce((total, item) => total + item.price * item.quantity, 0),
+      state.items.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0
+      ),
 
-    // Геттер для вычисления общего количества товаров в корзине
-    itemCount: (state) => state.items.reduce((acc, item) => acc + item.quantity, 0),
+    itemCount: (state) =>
+      state.items.reduce((acc, item) => acc + item.quantity, 0),
   },
-})
+});

@@ -155,4 +155,9 @@ export default {
     closingIn: "This page will close in",
     manualClose: "You can close this tab manually and return to login.",
   },
+
+  productPage: {
+    addToCart: 'Add to Cart',
+    backToList: 'Back to Products'
+  },
 };

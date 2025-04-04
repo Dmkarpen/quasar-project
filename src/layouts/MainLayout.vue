@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf" class="bg-layout">
+  <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
         <!-- Кнопка меню -->
@@ -154,13 +154,6 @@ function switchLang(lang) {
 </script>
 
 <style scoped>
-.bg-layout {
-  background-color: #e0f7fa;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
 .relative-badge {
   position: relative;
   display: inline-block;
