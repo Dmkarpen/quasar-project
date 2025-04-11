@@ -139,7 +139,8 @@ export default {
     searchPlaceholder: "Поиск товаров...",
     allCategories: "Все категории",
     allProducts: "Все товары:",
-    addToCart: "В корзину",
+    addToCart: "Добавить в корзину",
+    inCart: "В корзине",
     recentlyViewed: "Ранее просмотренные",
   },
 
@@ -148,6 +149,8 @@ export default {
     hello: "Привет",
     yourEmail: "Ваш email",
     logoutBtn: "Выйти",
+    wishlistTitle: "Товары из вашего Wishlist",
+    wishlistEmpty: "У вас пока нет товаров в Wishlist",
   },
 
   verified: {
@@ -163,5 +166,6 @@ export default {
     backToList: "Назад к товарам",
     recentlyViewed: "Ранее просмотренные товары",
     noViewed: "Нет просмотренных товаров",
+    inCart: "В корзине",
   },
 };

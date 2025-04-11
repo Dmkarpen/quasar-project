@@ -40,8 +40,17 @@
           <div class="text-h6">{{ product.title }}</div>
           <div class="text-subtitle2 text-primary">$ {{ product.price }}</div>
           <div class="text-body2 q-mt-xs">{{ product.description }}</div>
-          <q-btn :label="t('productsPage.addToCart')" color="primary" size="sm" class="q-mt-sm"
-            @click.stop="addToCart(product)" />
+          <div class="row q-mt-sm">
+            <!-- Кнопка корзины — занимает всё доступное пространство -->
+            <q-btn :label="isInCart(product) ? t('productsPage.inCart') : t('productsPage.addToCart')"
+              :color="isInCart(product) ? 'positive' : 'primary'" icon="add_shopping_cart"
+              @click.stop="handleCartClick(product)" class="col" />
+
+            <!-- Кнопка вишлиста справа -->
+            <q-btn v-if="userId" flat round size="md" :icon="isInWishlist(product.id) ? 'favorite' : 'favorite_border'"
+              :color="isInWishlist(product.id) ? 'red' : 'grey-7'" @click.stop="toggleWishlist(product.id)"
+              class="q-ml-sm" />
+          </div>
         </q-item-section>
       </q-item>
     </q-list>
@@ -98,7 +107,8 @@ const cartStore = useCartStore()
 const currentPage = ref(1)
 const itemsPerPage = 10
 
-const user = ref(null)
+const userId = ref(null)
+const wishlist = ref([])
 const viewedProducts = ref([])
 const carouselIndex = ref(0)
 
@@ -106,8 +116,39 @@ function goToProduct(productId) {
   router.push(`/products/${productId}`)
 }
 
-function addToCart(product) {
-  cartStore.addToCart(product)
+function isInCart(product) {
+  return cartStore.items.some(item => item.id === product.id)
+}
+
+function handleCartClick(product) {
+  if (isInCart(product)) {
+    router.push('/cart')
+  } else {
+    cartStore.addToCart(product)
+  }
+}
+
+function isInWishlist(productId) {
+  return wishlist.value.includes(productId)
+}
+
+async function toggleWishlist(productId) {
+  if (!userId.value) return
+
+  const url = isInWishlist(productId)
+    ? 'http://127.0.0.1:8000/api/wishlist/remove'
+    : 'http://127.0.0.1:8000/api/wishlist/add'
+
+  await axios.post(url, {
+    user_id: userId.value,
+    product_id: productId
+  })
+
+  if (isInWishlist(productId)) {
+    wishlist.value = wishlist.value.filter(id => id !== productId)
+  } else {
+    wishlist.value.push(productId)
+  }
 }
 
 // Загружаем список продуктов
@@ -175,15 +216,18 @@ onMounted(async () => {
       }
     })
 
-    user.value = userData
+    userId.value = userData?.id
 
-    if (user.value?.id) {
-      const { data: viewed } = await axios.get(`http://127.0.0.1:8000/api/products-viewed?user_id=${user.value.id}`)
+    if (userId.value) {
+      const { data: viewed } = await axios.get(`http://127.0.0.1:8000/api/products-viewed?user_id=${userId.value}`)
       viewedProducts.value = viewed
+
+      const { data: wish } = await axios.get(`http://127.0.0.1:8000/api/wishlist?user_id=${userId.value}`)
+      wishlist.value = wish.map(p => p.id)
     }
 
   } catch (err) {
-    console.error('Не вдалося завантажити переглянуті товари:', err)
+    console.error('Не вдалося завантажити дані користувача або переглянуті товари:', err)
   }
 })
 </script>

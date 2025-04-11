@@ -139,6 +139,7 @@ export default {
     allCategories: "All categories",
     allProducts: "All products:",
     addToCart: "Add to Cart",
+    inCart: "In Cart",
     recentlyViewed: "Recently Viewed",
   },
 
@@ -147,6 +148,8 @@ export default {
     hello: "Hello",
     yourEmail: "Your email",
     logoutBtn: "Logout",
+    wishlistTitle: "Items in your Wishlist",
+    wishlistEmpty: "You have no items in your Wishlist yet",
   },
 
   verified: {
@@ -162,5 +165,6 @@ export default {
     backToList: "Back to Products",
     recentlyViewed: "Recently Viewed Products",
     noViewed: "No viewed products yet",
+    inCart: "In Cart",
   },
 };
