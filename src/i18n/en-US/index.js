@@ -163,8 +163,9 @@ export default {
   productPage: {
     addToCart: "Add to Cart",
     backToList: "Back to Products",
-    recentlyViewed: "Recently Viewed Products",
+    recentlyViewed: "Recently Viewed",
     noViewed: "No viewed products yet",
     inCart: "In Cart",
+    relatedProducts: "You may also like",
   },
 };

@@ -164,8 +164,9 @@ export default {
   productPage: {
     addToCart: "Добавить в корзину",
     backToList: "Назад к товарам",
-    recentlyViewed: "Ранее просмотренные товары",
+    recentlyViewed: "Ранее просмотренные",
     noViewed: "Нет просмотренных товаров",
     inCart: "В корзине",
+    relatedProducts: "Вам также может понравиться",
   },
 };

@@ -22,14 +22,14 @@
         <q-separator />
 
         <!-- Цена -->
-        <q-card-section class="text-center">
+        <q-card-section class="text-center q-pb-sm q-pt-sm">
           <div class="text-h5 text-positive">
             {{ product.price }} ₴
           </div>
         </q-card-section>
 
         <!-- Кнопка "Добавить в корзину" -->
-        <q-card-actions align="center" class="q-mt-sm">
+        <q-card-actions align="center" class="q-mt-xs">
           <q-btn :label="isInCart(product) ? t('productPage.inCart') : t('productPage.addToCart')"
             :color="isInCart(product) ? 'positive' : 'primary'" icon="add_shopping_cart" @click="handleCartClick"
             style="min-width: 220px" />
@@ -39,13 +39,52 @@
         </q-card-actions>
 
         <!-- Кнопка "Назад к товарам" -->
-        <q-card-actions align="center" class="q-mt-sm">
+        <q-card-actions align="center" class="q-mt-xs">
           <q-btn color="secondary" flat icon="arrow_back" :label="t('productPage.backToList')" @click="goBack" />
         </q-card-actions>
       </q-card>
     </div>
 
-    <div v-else>
+    <!-- Рекомендовані товари -->
+    <q-card class="q-mt-lg q-pa-md" v-if="relatedProducts.length">
+      <div class="text-h6 q-mb-md">{{ t('productPage.relatedProducts') }}</div>
+
+      <q-carousel v-model="relatedIndex" padding height="200px" arrows navigation-color="primary"
+        control-color="primary">
+        <q-carousel-slide v-for="(product, i) in relatedProducts" :key="product.id" :name="i">
+          <div class="row justify-center items-center q-gutter-md">
+            <q-img :src="product.images?.[0]?.url || product.thumbnail" :alt="product.title"
+              style="width: 120px; height: 120px" class="cursor-pointer" @click="goToProduct(product.id)" />
+            <div>
+              <div class="text-subtitle2">{{ product.title }}</div>
+              <div class="text-body2 text-primary">{{ product.price }} ₴</div>
+            </div>
+          </div>
+        </q-carousel-slide>
+      </q-carousel>
+    </q-card>
+
+    <!-- Карусель переглянутих товарів -->
+    <q-card class="q-mt-md q-pa-md" v-if="userId && viewedLoaded && viewedProducts.length">
+      <div class="text-h6 q-mb-md">{{ t('productsPage.recentlyViewed') }}</div>
+
+      <q-carousel v-model="viewedCarouselIndex" padding height="200px" arrows navigation-color="primary"
+        control-color="primary" class="bg-white">
+        <q-carousel-slide v-for="(product, i) in viewedProducts" :key="product.id" :name="i">
+          <div class="row justify-center items-center q-gutter-md">
+            <q-img :src="product.images?.[0]?.url" :alt="product.title" style="width: 120px; height: 120px"
+              @click="goToProduct(product.id)" class="cursor-pointer" />
+            <div>
+              <div class="text-subtitle2 text-primary">{{ product.title }}</div>
+              <div class="text-body2">{{ product.price }} ₴</div>
+            </div>
+          </div>
+        </q-carousel-slide>
+      </q-carousel>
+    </q-card>
+
+    <!-- Спіннер тільки якщо userId є і ще не завантажено -->
+    <div v-else-if="userId && !viewedLoaded" class="q-mt-md">
       <q-spinner size="40px" color="primary" />
     </div>
   </q-page>
@@ -68,6 +107,12 @@ const cartStore = useCartStore()
 
 const userId = ref(null)
 const wishlist = ref([])
+const viewedProducts = ref([])
+const viewedLoaded = ref(false)
+const viewedCarouselIndex = ref(0)
+const relatedProducts = ref([])
+const relatedIndex = ref(0)
+
 
 function isInWishlist(productId) {
   return wishlist.value.includes(productId)
@@ -87,6 +132,10 @@ function handleCartClick() {
 
 function goBack() {
   router.push('/products')
+}
+
+function goToProduct(id) {
+  router.push(`/products/${id}`)
 }
 
 async function toggleWishlist(productId) {
@@ -113,15 +162,21 @@ onMounted(async () => {
   const token = localStorage.getItem('api_token')
 
   try {
-    // Загружаем сам товар
+    // 1. Завантажуємо товар
     const productRes = await axios.get(`http://127.0.0.1:8000/api/products/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
     product.value = productRes.data
 
-    // Если токен есть — пробуем получить пользователя и вишлист
+    // 2. Завантажуємо товари з такої ж категорії
+    if (product.value?.category) {
+      const { data: allProducts } = await axios.get(`http://3123379.ki574762.web.hosting-test.net/api/products`)
+      relatedProducts.value = allProducts
+        .filter(p => p.category === product.value.category && p.id !== product.value.id)
+        .slice(0, 10)
+    }
+
+    // 3. Якщо є токен — завантажуємо користувача, вишлист і переглянуті
     if (token) {
       const { data: userData } = await axios.get('http://127.0.0.1:8000/api/me', {
         headers: { Authorization: `Bearer ${token}` }
@@ -130,14 +185,25 @@ onMounted(async () => {
       userId.value = userData?.id
 
       if (userId.value) {
+        // 3.1 Вишлист
         const { data: wish } = await axios.get(`http://127.0.0.1:8000/api/wishlist?user_id=${userId.value}`)
         wishlist.value = wish.map(p => p.id)
+
+        // 3.2 Переглянуті товари
+        const { data: viewed } = await axios.get(`http://127.0.0.1:8000/api/products-viewed?user_id=${userId.value}`)
+        viewedProducts.value = viewed
+          .filter(p => p.id !== product.value.id)
+          .slice(0, 10)
       }
+      viewedLoaded.value = true  // ✅ сюди краще винести
+    } else {
+      viewedLoaded.value = true  // ✅ а це — на випадок відсутності токена
     }
   } catch (error) {
-    console.error('Ошибка при загрузке товара или вишлиста:', error)
+    console.error('Помилка при завантаженні даних:', error)
   }
 })
+
 
 </script>
 
