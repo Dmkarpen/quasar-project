@@ -29,7 +29,7 @@
         </q-card-section>
 
         <!-- Кнопка "Добавить в корзину" -->
-        <q-card-actions align="center" class="q-mt-xs">
+        <q-card-actions align="center" class="q-mt-xs q-mb-xs">
           <q-btn :label="isInCart(product) ? t('productPage.inCart') : t('productPage.addToCart')"
             :color="isInCart(product) ? 'positive' : 'primary'" icon="add_shopping_cart" @click="handleCartClick"
             style="min-width: 220px" />
@@ -39,11 +39,66 @@
         </q-card-actions>
 
         <!-- Кнопка "Назад к товарам" -->
-        <q-card-actions align="center" class="q-mt-xs">
+        <q-card-actions align="center" class="q-mt-xs q-mb-xs">
           <q-btn color="secondary" flat icon="arrow_back" :label="t('productPage.backToList')" @click="goBack" />
         </q-card-actions>
       </q-card>
     </div>
+
+    <!-- Відгуки -->
+    <q-card class="q-mt-xs q-pa-md">
+      <!-- Заголовок -->
+      <div class="text-h6 q-mb-md">{{ t('productPage.reviewsTitle') }}</div>
+
+      <!-- 🟡 Середня оцінка -->
+      <div v-if="reviews.length" class="q-mb-md">
+        <q-icon name="star" color="amber" size="24px" />
+        <span class="text-subtitle2">
+          {{ t('productPage.averageRating') }}: {{ averageRating.toFixed(1) }} / 5
+          ({{ reviews.length }})
+        </span>
+      </div>
+
+      <!-- 📃 Список відгуків -->
+      <div v-if="reviews.length">
+        <q-list bordered separator>
+          <q-item v-for="review in reviews" :key="review.id">
+            <q-item-section>
+              <q-rating readonly size="20px" :model-value="review.rating" color="amber" />
+              <div class="text-body2 q-mt-xs">{{ review.comment }}</div>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
+      <div v-else class="text-grey-7">
+        {{ t('productPage.noReviews') }}
+      </div>
+
+      <!-- ✍️ Додавання відгуку -->
+      <div v-if="userId" class="q-mt-xl">
+        <!-- Якщо вже залишено відгук -->
+        <q-card v-if="myReview && !editingReview" flat bordered class="q-pa-md q-mb-md">
+          <div class="text-subtitle2 q-mb-sm">
+            {{ t('productPage.alreadyReviewed') }}
+          </div>
+          <q-btn color="primary" @click="startEditing" icon="edit">
+            {{ t('productPage.editReview') }}
+          </q-btn>
+        </q-card>
+
+        <!-- Форма: лише якщо ще не залишено або йде редагування -->
+        <div v-if="!myReview || editingReview">
+          <div class="text-subtitle2 q-mb-sm">{{ t('productPage.yourReview') }}</div>
+
+          <q-rating v-model="reviewRating" max="5" color="amber" size="32px" class="q-mb-sm" />
+
+          <q-input v-model="reviewComment" type="textarea" :placeholder="t('productPage.reviewPlaceholder')" autogrow />
+
+          <q-btn class="q-mt-sm" color="primary" icon="send"
+            :label="myReview ? t('productPage.updateReview') : t('productPage.submitReview')" @click="submitReview" />
+        </div>
+      </div>
+    </q-card>
 
     <!-- Рекомендовані товари -->
     <q-card class="q-mt-lg q-pa-md" v-if="relatedProducts.length">
@@ -113,6 +168,12 @@ const viewedCarouselIndex = ref(0)
 const relatedProducts = ref([])
 const relatedIndex = ref(0)
 
+const reviews = ref([])
+const reviewRating = ref(0)
+const reviewComment = ref('')
+const averageRating = ref(0)
+const myReview = ref(null)
+const editingReview = ref(false)
 
 function isInWishlist(productId) {
   return wishlist.value.includes(productId)
@@ -154,6 +215,50 @@ async function toggleWishlist(productId) {
     wishlist.value = wishlist.value.filter(id => id !== productId)
   } else {
     wishlist.value.push(productId)
+  }
+}
+
+function startEditing() {
+  if (myReview.value) {
+    reviewRating.value = myReview.value.rating
+    reviewComment.value = myReview.value.comment
+    editingReview.value = true
+  }
+}
+
+async function submitReview() {
+  const token = localStorage.getItem('api_token')
+  if (!token || !product.value?.id || !reviewRating.value) return
+
+  try {
+    await axios.post(
+      'http://127.0.0.1:8000/api/reviews',
+      {
+        product_id: product.value.id,
+        rating: reviewRating.value,
+        comment: reviewComment.value,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
+
+    // Оновлюємо власний відгук одразу для відображення
+    myReview.value = {
+      rating: reviewRating.value,
+      comment: reviewComment.value
+    }
+
+    editingReview.value = false
+
+    // Перезавантажуємо всі відгуки
+    const reviewsRes = await axios.get(`http://127.0.0.1:8000/api/reviews/${product.value.id}`)
+    reviews.value = reviewsRes.data.reviews
+    averageRating.value = reviewsRes.data.average_rating
+  } catch (e) {
+    console.error('Ошибка при отправке отзыва:', e)
   }
 }
 
@@ -199,11 +304,24 @@ onMounted(async () => {
     } else {
       viewedLoaded.value = true  // ✅ а це — на випадок відсутності токена
     }
+
+    // 4. Завантажуємо відгуки (видимі для всіх)
+    try {
+      const reviewsRes = await axios.get(`http://127.0.0.1:8000/api/reviews/${id}`)
+      reviews.value = reviewsRes.data.reviews
+      averageRating.value = reviewsRes.data.average_rating
+
+      if (userId.value) {
+        myReview.value = reviews.value.find(r => r.user_id === userId.value) || null
+      }
+    } catch (e) {
+      console.error('Помилка при завантаженні відгуків:', e)
+    }
+
   } catch (error) {
     console.error('Помилка при завантаженні даних:', error)
   }
 })
-
 
 </script>
 
