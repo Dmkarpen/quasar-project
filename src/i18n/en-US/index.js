@@ -177,5 +177,6 @@ export default {
     alreadyReviewed: "You have already submitted a review",
     editReview: "Edit review",
     updateReview: "Update review",
+    reviews: "reviews",
   },
 };

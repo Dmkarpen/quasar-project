@@ -40,6 +40,17 @@
           <div class="text-h6">{{ product.title }}</div>
           <div class="text-subtitle2 text-primary">$ {{ product.price }}</div>
           <div class="text-body2 q-mt-xs">{{ product.description }}</div>
+          <div class="q-mt-xs">
+            <div v-if="product.reviews_count && product.reviews_count > 0" class="flex items-center gap-1">
+              <q-rating :model-value="Number(product.reviews_avg_rating)" max="5" size="20px" color="deep-orange"
+                color-inactive="deep-orange" icon="star_border" icon-selected="star" icon-half="star_half"
+                :no-dimming="true" />
+              <span class="text-body1">({{ product.reviews_count }} {{ t('productPage.reviews') }})</span>
+            </div>
+            <div v-else class="text-caption text-grey">
+              {{ t('productPage.noReviews') }}
+            </div>
+          </div>
           <div class="row q-mt-sm">
             <!-- Кнопка корзины — занимает всё доступное пространство -->
             <q-btn :label="isInCart(product) ? t('productsPage.inCart') : t('productsPage.addToCart')"
@@ -152,13 +163,14 @@ async function toggleWishlist(productId) {
 }
 
 // Загружаем список продуктов
-api('http://3123379.ki574762.web.hosting-test.net/api/products')
-  .then(({ data }) => {
-    products.value = data
-  })
-  .catch((error) => {
-    console.error('Ошибка при загрузке продуктов:', error)
-  })
+// api('http://3123379.ki574762.web.hosting-test.net/api/products')
+//   .then(({ data }) => {
+//     products.value = data
+//     console.log('products:', products.value)
+//   })
+//   .catch((error) => {
+//     console.error('Ошибка при загрузке продуктов:', error)
+//   })
 
 // Определяем категории
 const categoryOptions = computed(() => {
@@ -225,6 +237,12 @@ onMounted(async () => {
       const { data: wish } = await axios.get(`http://127.0.0.1:8000/api/wishlist?user_id=${userId.value}`)
       wishlist.value = wish.map(p => p.id)
     }
+
+    // 🔥 Вот это добавь:
+    const { data: productList } = await axios.get('http://127.0.0.1:8000/api/products')
+    products.value = productList
+
+    // console.log('products:', products.value)
 
   } catch (err) {
     console.error('Не вдалося завантажити дані користувача або переглянуті товари:', err)

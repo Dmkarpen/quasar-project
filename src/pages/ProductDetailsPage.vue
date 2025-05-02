@@ -51,11 +51,12 @@
       <div class="text-h6 q-mb-md">{{ t('productPage.reviewsTitle') }}</div>
 
       <!-- 🟡 Середня оцінка -->
-      <div v-if="reviews.length" class="q-mb-md">
-        <q-icon name="star" color="amber" size="24px" />
-        <span class="text-subtitle2">
-          {{ t('productPage.averageRating') }}: {{ averageRating.toFixed(1) }} / 5
-          ({{ reviews.length }})
+      <div v-if="reviews.length" class="q-mb-md flex items-center gap-2">
+        <q-rating readonly :model-value="averageRating" max="5" size="24px" color="deep-orange"
+          color-inactive="deep-orange" icon="star_border" icon-selected="star" icon-half="star_half"
+          :no-dimming="true" />
+        <span class="text-h6">
+          ({{ reviews.length }} {{ t('productPage.reviews') }})
         </span>
       </div>
 
@@ -64,7 +65,13 @@
         <q-list bordered separator>
           <q-item v-for="review in reviews" :key="review.id">
             <q-item-section>
-              <q-rating readonly size="20px" :model-value="review.rating" color="amber" />
+              <div class="text-h6">
+                {{ review.user?.name || 'Анонім' }}
+              </div>
+              <div class="text-caption q-mb-xs">
+                {{ formatDate(review.created_at) }}
+              </div>
+              <q-rating readonly size="20px" :model-value="review.rating" color="deep-orange" />
               <div class="text-body2 q-mt-xs">{{ review.comment }}</div>
             </q-item-section>
           </q-item>
@@ -90,7 +97,7 @@
         <div v-if="!myReview || editingReview">
           <div class="text-subtitle2 q-mb-sm">{{ t('productPage.yourReview') }}</div>
 
-          <q-rating v-model="reviewRating" max="5" color="amber" size="32px" class="q-mb-sm" />
+          <q-rating v-model="reviewRating" max="5" color="deep-orange" size="32px" class="q-mb-sm" />
 
           <q-input v-model="reviewComment" type="textarea" :placeholder="t('productPage.reviewPlaceholder')" autogrow />
 
@@ -157,7 +164,7 @@ const route = useRoute()
 const router = useRouter()
 const product = ref(null)
 const carouselIndex = ref(0) // индекс активного слайда
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const cartStore = useCartStore()
 
 const userId = ref(null)
@@ -260,6 +267,11 @@ async function submitReview() {
   } catch (e) {
     console.error('Ошибка при отправке отзыва:', e)
   }
+}
+
+function formatDate(dateString) {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString(locale.value, options);
 }
 
 onMounted(async () => {

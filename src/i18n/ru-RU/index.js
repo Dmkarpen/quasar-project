@@ -178,5 +178,6 @@ export default {
     alreadyReviewed: "Вы уже оставили отзыв",
     editReview: "Редактировать отзыв",
     updateReview: "Обновить отзыв",
+    reviews: "отзывов",
   },
 };
