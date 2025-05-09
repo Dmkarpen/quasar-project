@@ -287,7 +287,7 @@ onMounted(async () => {
 
     // 2. Завантажуємо товари з такої ж категорії
     if (product.value?.category) {
-      const { data: allProducts } = await axios.get(`http://3123379.ki574762.web.hosting-test.net/api/products`)
+      const { data: allProducts } = await axios.get(`http://127.0.0.1:8000/api/products`)
       relatedProducts.value = allProducts
         .filter(p => p.category === product.value.category && p.id !== product.value.id)
         .slice(0, 10)
